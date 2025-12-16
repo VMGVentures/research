@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import VendorGrid from './components/VendorGrid';
 import FilterControls from './components/FilterControls';
+import PasswordProtection from '../components/PasswordProtection';
+
+
 
 interface VendorData {
   vendor: string;
@@ -74,7 +77,7 @@ function parseCSVRow(row: string): string[] {
   return result;
 }
 
-export default function CompetitiveLandscape() {
+function CompetitiveLandscape() {
   const [vendors, setVendors] = useState<VendorData[]>([]);
   const [filteredVendors, setFilteredVendors] = useState<VendorData[]>([]);
   const [filters, setFilters] = useState<RangeFilter>({
@@ -85,6 +88,21 @@ export default function CompetitiveLandscape() {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Keyboard shortcut for clearing auth
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.metaKey && event.altKey && event.key === '®') {
+        event.preventDefault();
+        console.log('🔄 Clearing authentication for competitive-landscape...');
+        localStorage.removeItem('auth_competitive-landscape');
+        window.location.reload();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Load vendor data on component mount
   useEffect(() => {
@@ -217,5 +235,13 @@ export default function CompetitiveLandscape() {
         <VendorGrid vendors={filteredVendors} />
       </div>
     </div>
+  );
+}
+
+export default function CompetitiveLandscapeWithAuth() {
+  return (
+    <PasswordProtection pageSlug="competitive-landscape">
+      <CompetitiveLandscape />
+    </PasswordProtection>
   );
 }
