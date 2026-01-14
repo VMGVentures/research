@@ -7,6 +7,9 @@ interface RangeFilter {
   dataContent: [number, number];
   analysisInsight: [number, number];
   technologyArchitecture: [number, number];
+  buyside: boolean;
+  sellside: boolean;
+  issuerAdvisors: boolean;
 }
 
 interface FilterControlsProps {
@@ -21,6 +24,33 @@ interface RangeSliderProps {
   max: number;
   values: [number, number];
   onChange: (values: [number, number]) => void;
+}
+
+interface ToggleFilterProps {
+  label: string;
+  value: boolean;
+  onChange: (value: boolean) => void;
+  color: string;
+}
+
+function ToggleFilter({ label, value, onChange, color }: ToggleFilterProps) {
+  return (
+    <div className="flex items-center gap-4">
+      <button
+        onClick={() => onChange(!value)}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ${
+          value ? color : 'bg-gray-600'
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+            value ? 'translate-x-6' : 'translate-x-1'
+          }`}
+        />
+      </button>
+      <label className="text-sm font-medium text-gray-200">{label}</label>
+    </div>
+  );
 }
 
 function RangeSlider({ label, min, max, values, onChange }: RangeSliderProps) {
@@ -182,7 +212,10 @@ export default function FilterControls({ filters, onFiltersChange, vendorCount }
       utilityWorkflow: [0, 5],
       dataContent: [0, 5],
       analysisInsight: [0, 5],
-      technologyArchitecture: [0, 5]
+      technologyArchitecture: [0, 5],
+      buyside: true,
+      sellside: true,
+      issuerAdvisors: true
     });
   };
 
@@ -191,21 +224,39 @@ export default function FilterControls({ filters, onFiltersChange, vendorCount }
       filters.utilityWorkflow[0] > 0 || filters.utilityWorkflow[1] < 5 ||
       filters.dataContent[0] > 0 || filters.dataContent[1] < 5 ||
       filters.analysisInsight[0] > 0 || filters.analysisInsight[1] < 5 ||
-      filters.technologyArchitecture[0] > 0 || filters.technologyArchitecture[1] < 5
+      filters.technologyArchitecture[0] > 0 || filters.technologyArchitecture[1] < 5 ||
+      !filters.buyside ||
+      !filters.sellside ||
+      !filters.issuerAdvisors
     );
   };
 
-  const CompactPreview = () => (
-    <div className="flex flex-wrap gap-2 text-xs text-gray-300">
-      <span>Utility: {filters.utilityWorkflow[0]}-{filters.utilityWorkflow[1]}</span>
-      <span>•</span>
-      <span>Data: {filters.dataContent[0]}-{filters.dataContent[1]}</span>
-      <span>•</span>
-      <span>Insight: {filters.analysisInsight[0]}-{filters.analysisInsight[1]}</span>
-      <span>•</span>
-      <span>Tech: {filters.technologyArchitecture[0]}-{filters.technologyArchitecture[1]}</span>
-    </div>
-  );
+  const CompactPreview = () => {
+    const disabledFilters = [];
+    if (!filters.buyside) disabledFilters.push('Buyside: Off');
+    if (!filters.sellside) disabledFilters.push('Sellside: Off');
+    if (!filters.issuerAdvisors) disabledFilters.push('Issuer/Advisors: Off');
+    
+    return (
+      <div className="flex flex-wrap gap-2 text-xs text-gray-300">
+        <span>Utility: {filters.utilityWorkflow[0]}-{filters.utilityWorkflow[1]}</span>
+        <span>•</span>
+        <span>Data: {filters.dataContent[0]}-{filters.dataContent[1]}</span>
+        <span>•</span>
+        <span>Insight: {filters.analysisInsight[0]}-{filters.analysisInsight[1]}</span>
+        <span>•</span>
+        <span>Tech: {filters.technologyArchitecture[0]}-{filters.technologyArchitecture[1]}</span>
+        {disabledFilters.length > 0 && (
+          <>
+            <span>•</span>
+            {disabledFilters.map((filter, index) => (
+              <span key={index} className="text-red-400">{filter}</span>
+            ))}
+          </>
+        )}
+      </div>
+    );
+  };
 
   const ChevronIcon = () => (
     <svg 
@@ -260,12 +311,12 @@ export default function FilterControls({ filters, onFiltersChange, vendorCount }
       <div 
         className={`transition-all duration-300 ease-in-out ${
           isExpanded 
-            ? 'max-h-96 opacity-100' 
+            ? 'max-h-144 opacity-100' 
             : 'max-h-0 opacity-0'
         } overflow-hidden`}
       >
         <div className="px-6 pb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <RangeSlider
               label="Utility/Operations"
               min={0}
@@ -294,6 +345,30 @@ export default function FilterControls({ filters, onFiltersChange, vendorCount }
               values={filters.technologyArchitecture}
               onChange={(values) => updateFilter('technologyArchitecture', values)}
             />
+          </div>
+          
+          <div className="border-t border-gray-600 pt-6">
+            <h3 className="text-sm font-medium text-gray-300 mb-4">Market Segments (Show vendors that serve any selected segment)</h3>
+            <div className="space-y-4">
+              <ToggleFilter
+                label="Buyside"
+                value={filters.buyside}
+                onChange={(value) => onFiltersChange({ ...filters, buyside: value })}
+                color="bg-blue-500"
+              />
+              <ToggleFilter
+                label="Sellside"
+                value={filters.sellside}
+                onChange={(value) => onFiltersChange({ ...filters, sellside: value })}
+                color="bg-emerald-500"
+              />
+              <ToggleFilter
+                label="Issuer/Advisors"
+                value={filters.issuerAdvisors}
+                onChange={(value) => onFiltersChange({ ...filters, issuerAdvisors: value })}
+                color="bg-rose-400"
+              />
+            </div>
           </div>
         </div>
       </div>

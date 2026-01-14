@@ -82,7 +82,7 @@ export default function RadarChart({ vendor }: RadarProps) {
   
   return (
     <div>
-      <svg id={vendor.vendor} width="240" height="280" viewBox="0 0 240 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg style={{margin: "0 auto"}} id={vendor.vendor} width="240" height="280" viewBox="0 0 240 280" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M218.586 120L120 218.586L21.4141 120L120 21.4141L218.586 120Z" stroke={colors.radarStroke} strokeWidth="2"/>
         <path d="M198.586 120L120 198.586L41.4141 120L120 41.4141L198.586 120Z" stroke={colors.radarStroke} strokeWidth="2"/>
         <path d="M178.586 120L120 178.586L61.4141 120L120 61.4141L178.586 120Z" stroke={colors.radarStroke} strokeWidth="2"/>
@@ -141,6 +141,28 @@ export default function RadarChart({ vendor }: RadarProps) {
           </linearGradient>
         </defs>
       </svg>
+
+      {/* Chips for boolean fields */}
+      <div className="flex flex-wrap gap-2 mt-1 mb-5 justify-center">
+        {vendor.buyside && (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-700 text-white">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mr-1.5"></div>
+            Buyside
+          </span>
+        )}
+        {vendor.sellside && (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-700 text-white">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full mr-1.5"></div>
+            Sellside
+          </span>
+        )}
+        {vendor.issuerAdvisors && (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-700 text-white">
+            <div className="w-2 h-2 bg-rose-400 rounded-full mr-1.5"></div>
+            Issuer/Advisors
+          </span>
+        )}
+      </div>
 
     </div>
   );

@@ -26,6 +26,9 @@ interface RangeFilter {
   dataContent: [number, number];
   analysisInsight: [number, number];
   technologyArchitecture: [number, number];
+  buyside: boolean;
+  sellside: boolean;
+  issuerAdvisors: boolean;
 }
 
 function parseVendorData(csvContent: string): VendorData[] {
@@ -84,7 +87,10 @@ function CompetitiveLandscape() {
     utilityWorkflow: [0, 5],
     dataContent: [0, 5],
     analysisInsight: [0, 5],
-    technologyArchitecture: [0, 5]
+    technologyArchitecture: [0, 5],
+    buyside: true,
+    sellside: true,
+    issuerAdvisors: true
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -141,11 +147,21 @@ function CompetitiveLandscape() {
         vendor.technologyArchitecture <= filters.technologyArchitecture[1]
       );
 
+      // Apply toggle-based market segment filters (union logic)
+      // If all toggles are disabled, show nothing
+      // If any toggles are enabled, show vendors that match at least one enabled segment
+      const hasAnyToggleEnabled = filters.buyside || filters.sellside || filters.issuerAdvisors;
+      const passesMarketSegmentFilters = !hasAnyToggleEnabled || (
+        (filters.buyside && vendor.buyside) ||
+        (filters.sellside && vendor.sellside) ||
+        (filters.issuerAdvisors && vendor.issuerAdvisors)
+      );
+
       // Apply search filter (case-insensitive substring match)
       const passesSearchFilter = searchTerm === '' || 
         vendor.vendor.toLowerCase().includes(searchTerm.toLowerCase());
 
-      return passesRangeFilters && passesSearchFilter;
+      return passesRangeFilters && passesMarketSegmentFilters && passesSearchFilter;
     });
     
     setFilteredVendors(filtered);
